@@ -1,6 +1,16 @@
 [package]
-name = "TextDistance"
+name = "textdistance-rs"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+serde_json = "1"
+criterion = "0.5"
+
+[[bench]]
+name = "benchmark"
+harness = false
