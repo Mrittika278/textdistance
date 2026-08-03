@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use textdistance_rs::{Distance, Similarity};
 
 use textdistance_rs::simple::{Identity, Prefix, Postfix, Hamming};
@@ -14,77 +16,97 @@ use textdistance_rs::compression::{
     NCD,
 };
 
+/// Helper function to prompt the user and read a clean input string
+fn get_user_input(prompt: &str) -> String {
+    print!("{}", prompt);
+    io::stdout().flush().expect("Failed to flush stdout");
+
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+
+    // Trim trailing newline / carriage return characters
+    input.trim().to_string()
+}
+
 fn main() {
     println!();
     println!("==============================================================");
-    println!("              TEXTDISTANCE-RS DEMONSTRATION");
+    println!("              TEXTDISTANCE-RS INTERACTIVE DEMO");
     println!("==============================================================");
     println!();
 
-    println!("Sample Inputs:");
-    println!("\"kitten\"  <->  \"sitting\"");
+    // Get input strings from the user
+    let str1 = get_user_input("Enter first string  : ");
+    let str2 = get_user_input("Enter second string : ");
+
+    println!();
+    println!("Comparing: \"{}\" <-> \"{}\"", str1, str2);
     println!();
 
     // =========================================================
     // SIMPLE
     // =========================================================
-
     println!("==================== SIMPLE ====================");
 
     let identity = Identity;
     println!(
         "Identity                 : {}",
-        identity.similarity_value("hello", "hello")
+        identity.similarity_value(&str1, &str2)
     );
 
     let prefix = Prefix;
     println!(
         "Prefix Similarity        : {}",
-        prefix.similarity_value("hello", "help")
+        prefix.similarity_value(&str1, &str2)
     );
 
     let postfix = Postfix;
     println!(
         "Postfix Similarity       : {}",
-        postfix.similarity_value("hello", "jello")
+        postfix.similarity_value(&str1, &str2)
     );
 
     let hamming = Hamming;
-    println!(
-        "Hamming Distance         : {}",
-        hamming.distance("karolin", "kathrin")
-    );
+    if str1.chars().count() == str2.chars().count() {
+        println!(
+            "Hamming Distance         : {}",
+            hamming.distance(&str1, &str2)
+        );
+    } else {
+        println!("Hamming Distance         : N/A (Strings must be equal length)");
+    }
 
     println!();
 
     // =========================================================
     // EDIT
     // =========================================================
-
     println!("===================== EDIT =====================");
 
     let lev = Levenshtein;
     println!(
         "Levenshtein              : {}",
-        lev.distance("kitten", "sitting")
+        lev.distance(&str1, &str2)
     );
 
     let dam = DamerauLevenshtein;
     println!(
         "Damerau-Levenshtein      : {}",
-        dam.distance("ca", "ac")
+        dam.distance(&str1, &str2)
     );
 
     let jaro = Jaro::new();
     println!(
         "Jaro Similarity          : {:.3}",
-        jaro.normalized_similarity("MARTHA", "MARHTA")
+        jaro.normalized_similarity(&str1, &str2)
     );
 
     let jw = JaroWinkler::new();
     println!(
         "Jaro-Winkler Similarity  : {:.3}",
-        jw.normalized_similarity("MARTHA", "MARHTA")
+        jw.normalized_similarity(&str1, &str2)
     );
 
     println!();
@@ -92,43 +114,42 @@ fn main() {
     // =========================================================
     // TOKEN
     // =========================================================
-
     println!("==================== TOKEN =====================");
 
     let jac = Jaccard;
     println!(
         "Jaccard                  : {:.3}",
-        jac.normalized_similarity("abc", "abd")
+        jac.normalized_similarity(&str1, &str2)
     );
 
     let sor = Sorensen;
     println!(
         "Sorensen                 : {:.3}",
-        sor.normalized_similarity("abc", "abd")
+        sor.normalized_similarity(&str1, &str2)
     );
 
     let overlap = Overlap;
     println!(
         "Overlap                  : {:.3}",
-        overlap.normalized_similarity("abc", "abd")
+        overlap.normalized_similarity(&str1, &str2)
     );
 
     let cosine = Cosine;
     println!(
         "Cosine                   : {:.3}",
-        cosine.normalized_similarity("abc", "abd")
+        cosine.normalized_similarity(&str1, &str2)
     );
 
     let tv = Tversky::new();
     println!(
         "Tversky                  : {:.3}",
-        tv.normalized_similarity("abc", "abd")
+        tv.normalized_similarity(&str1, &str2)
     );
 
     let bag = Bag;
     println!(
         "Bag Distance             : {}",
-        bag.distance("abc", "abd")
+        bag.distance(&str1, &str2)
     );
 
     println!();
@@ -136,25 +157,24 @@ fn main() {
     // =========================================================
     // SEQUENCE
     // =========================================================
-
     println!("=================== SEQUENCE ===================");
 
     let lcs = LcsSeq;
     println!(
         "LCS Sequence             : {}",
-        lcs.similarity_value("abcde", "ace")
+        lcs.similarity_value(&str1, &str2)
     );
 
     let lcss = LcsStr;
     println!(
         "LCS Substring            : {}",
-        lcss.similarity_value("abcdef", "zabxycdef")
+        lcss.similarity_value(&str1, &str2)
     );
 
     let rat = RatcliffObershelp;
     println!(
         "Ratcliff-Obershelp       : {:.3}",
-        rat.normalized_similarity("abcde", "abfde")
+        rat.normalized_similarity(&str1, &str2)
     );
 
     println!();
@@ -162,19 +182,18 @@ fn main() {
     // =========================================================
     // PHONETIC
     // =========================================================
-
     println!("=================== PHONETIC ===================");
 
     let mra = Mra;
     println!(
         "MRA Similarity           : {}",
-        mra.similarity_value("Smith", "Smyth")
+        mra.similarity_value(&str1, &str2)
     );
 
     let editex = Editex::new();
     println!(
         "Editex Distance          : {}",
-        editex.distance("cat", "kat")
+        editex.distance(&str1, &str2)
     );
 
     println!();
@@ -182,45 +201,41 @@ fn main() {
     // =========================================================
     // COMPRESSION
     // =========================================================
-
     println!("================= COMPRESSION ==================");
 
     let rle = RLENCD;
     println!(
         "RLENCD                   : {:.3}",
-        rle.distance(&["banana", "banana"])
+        rle.distance(&[&str1, &str2])
     );
 
     let bwt = BWTRLENCD::default();
     println!(
         "BWTRLENCD                : {:.3}",
-        bwt.distance(&["banana", "banana"])
+        bwt.distance(&[&str1, &str2])
     );
 
     let sqrt = SqrtNCD;
     println!(
         "SqrtNCD                  : {:.3}",
-        sqrt.distance("banana", "bandana")
+        sqrt.distance(&str1, &str2)
     );
 
     let entropy = EntropyNCD::default();
     println!(
         "EntropyNCD               : {:.3}",
-        entropy.distance("banana", "bandana")
+        entropy.distance(&str1, &str2)
     );
 
     let zlib = ZLIBNCD;
     println!(
         "ZLIBNCD                  : {:.3}",
-        zlib.distance("banana", "bandana")
+        zlib.distance(&str1, &str2)
     );
 
     println!();
 
     println!("==============================================================");
-    println!("Implemented Algorithms : 24");
-    println!("Language               : Rust 🦀");
-    println!("Project                : textdistance-rs");
-    println!("Status                 : All algorithms executed successfully.");
+    println!("Executed all distance and similarity algorithms successfully.");
     println!("==============================================================");
 }

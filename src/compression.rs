@@ -566,7 +566,8 @@ impl ArithNCD {
             counts.insert(term, 1);
         }
 
-        let total_letters: i64 = counts.values().sum();
+        
+   let total_letters: i64 = counts.values().sum();
 
         let mut items: Vec<(char, i64)> = order.iter().map(|&c| (c, counts[&c])).collect();
         items.sort_by(|a, b| b.1.cmp(&a.1)); // stable: ties keep `order`
@@ -574,8 +575,9 @@ impl ArithNCD {
         let mut prob_pairs = HashMap::new();
         let mut cumulative: i64 = 0;
         for (ch, count) in items {
-            let start = BigRational::new(BigInt::from(cumulative), BigInt::from(total_letters));
-            let width = BigRational::new(BigInt::from(count), BigInt::from(total_letters));
+            // Use .into() so Rust uses the exact BigInt type expected by num_rational
+            let start = BigRational::new(cumulative.into(), total_letters.into());
+            let width = BigRational::new(count.into(), total_letters.into());
             prob_pairs.insert(ch, (start, width));
             cumulative += count;
         }
