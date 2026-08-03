@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 use std::f64;
 use itertools::Itertools;
+use bzip2::write::BzEncoder;
+use bzip2::Compression as BzCompression;
+
+use xz2::write::XzEncoder;
 
 use flate2::{
     Compression,
@@ -396,5 +400,252 @@ impl ZLIBNCD {
         }
 
         (cab - ca.min(cb)) / ca.max(cb)
+    }
+}
+
+
+
+// ============================================================
+// BZ2 NCD
+// ============================================================
+
+pub struct BZ2NCD;
+
+impl BZ2NCD {
+    fn compressed_size(data: &str) -> usize {
+        let mut encoder =
+            BzEncoder::new(Vec::new(), BzCompression::default());
+
+        encoder.write_all(data.as_bytes()).unwrap();
+
+        let compressed = encoder.finish().unwrap();
+
+        // Match Python slicing [15:]
+        compressed.len().saturating_sub(15)
+    }
+
+    pub fn distance(&self, a: &str, b: &str) -> f64 {
+        if a.is_empty() && b.is_empty() {
+            return 0.0;
+        }
+
+        let ca = Self::compressed_size(a) as f64;
+        let cb = Self::compressed_size(b) as f64;
+
+        let mut concat = String::new();
+        concat.push_str(a);
+        concat.push_str(b);
+
+        let cab = Self::compressed_size(&concat) as f64;
+
+        if ca.max(cb) == 0.0 {
+            return 0.0;
+        }
+
+        (cab - ca.min(cb)) / ca.max(cb)
+    }
+}
+// ============================================================
+// LZMA NCD
+// ============================================================
+
+pub struct LZMANCD;
+
+impl LZMANCD {
+    fn compressed_size(data: &str) -> usize {
+        let mut encoder = XzEncoder::new(Vec::new(), 6);
+
+        encoder.write_all(data.as_bytes()).unwrap();
+
+        let compressed = encoder.finish().unwrap();
+
+        // Match Python slicing [14:]
+        compressed.len().saturating_sub(14)
+    }
+
+    pub fn distance(&self, a: &str, b: &str) -> f64 {
+        if a.is_empty() && b.is_empty() {
+            return 0.0;
+        }
+
+        let ca = Self::compressed_size(a) as f64;
+        let cb = Self::compressed_size(b) as f64;
+
+        let mut concat = String::new();
+        concat.push_str(a);
+        concat.push_str(b);
+
+        let cab = Self::compressed_size(&concat) as f64;
+
+        if ca.max(cb) == 0.0 {
+            return 0.0;
+        }
+
+        (cab - ca.min(cb)) / ca.max(cb)
+    }
+}
+// ============================================================
+// ARITHMETIC CODING NCD
+// ============================================================
+//
+// Faithful port of textdistance's `ArithNCD`
+// (textdistance/algorithms/compression_based.py).
+//
+// Python's implementation uses `fractions.Fraction`, which is exact
+// (arbitrary-precision) and always kept in reduced form. To preserve
+// that exactly — rather than silently switching to lossy floats —
+// this port uses `num_rational::BigRational` (a `Ratio<BigInt>`),
+// which reduces on construction the same way `Fraction` does.
+
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use num_traits::{One, ToPrimitive, Zero};
+
+pub struct ArithNCD {
+    /// Logarithm base used by `_get_size` to turn the final numerator
+    /// into a "compressed size". Python default: 2.
+    pub base: f64,
+    /// Optional terminator character. Python default: None.
+    pub terminator: Option<char>,
+    /// q-gram size. Only qval == 1 (character-level) is implemented,
+    /// matching every other algorithm already in this port.
+    pub qval: usize,
+}
+
+impl Default for ArithNCD {
+    fn default() -> Self {
+        Self {
+            base: 2.0,
+            terminator: None,
+            qval: 1,
+        }
+    }
+}
+
+impl ArithNCD {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_base(base: f64) -> Self {
+        Self { base, ..Self::default() }
+    }
+
+    pub fn with_terminator(terminator: char) -> Self {
+        Self { terminator: Some(terminator), ..Self::default() }
+    }
+
+    /// Port of `_make_probs`.
+    ///
+    /// Ordering matters here: Python builds this from
+    /// `Counter.most_common()`, which sorts by descending count and,
+    /// for ties, falls back to insertion order (Python dicts/Counters
+    /// preserve first-occurrence order, and `sorted()` is stable).
+    /// We reproduce that by tracking first-appearance order explicitly
+    /// and doing a stable sort by count.
+    fn make_probs(&self, data: &str) -> HashMap<char, (BigRational, BigRational)> {
+        let mut order: Vec<char> = Vec::new();
+        let mut counts: HashMap<char, i64> = HashMap::new();
+
+        for c in data.chars() {
+            let counter = counts.entry(c).or_insert(0);
+            if *counter == 0 {
+                order.push(c);
+            }
+            *counter += 1;
+        }
+
+        if let Some(term) = self.terminator {
+            // Python: `counts[self.terminator] = 1` — this OVERWRITES
+            // any existing count for the terminator char, it does not
+            // add to it. If the char is new, it's appended at the end
+            // of iteration order, exactly like a fresh dict key.
+            if !counts.contains_key(&term) {
+                order.push(term);
+            }
+            counts.insert(term, 1);
+        }
+
+        let total_letters: i64 = counts.values().sum();
+
+        let mut items: Vec<(char, i64)> = order.iter().map(|&c| (c, counts[&c])).collect();
+        items.sort_by(|a, b| b.1.cmp(&a.1)); // stable: ties keep `order`
+
+        let mut prob_pairs = HashMap::new();
+        let mut cumulative: i64 = 0;
+        for (ch, count) in items {
+            let start = BigRational::new(BigInt::from(cumulative), BigInt::from(total_letters));
+            let width = BigRational::new(BigInt::from(count), BigInt::from(total_letters));
+            prob_pairs.insert(ch, (start, width));
+            cumulative += count;
+        }
+        debug_assert_eq!(cumulative, total_letters);
+
+        prob_pairs
+    }
+
+    /// Port of `_get_range`.
+    fn get_range(
+        &self,
+        data: &str,
+        probs: &HashMap<char, (BigRational, BigRational)>,
+    ) -> (BigRational, BigRational) {
+        let mut chars: Vec<char> = data.chars().collect();
+
+        if let Some(term) = self.terminator {
+            // Python: strip any existing terminator occurrences, then
+            // append exactly one at the end.
+            chars.retain(|&c| c != term);
+            chars.push(term);
+        }
+
+        let mut start = BigRational::zero();
+        let mut width = BigRational::one();
+
+        for ch in chars {
+            let (prob_start, prob_width) = &probs[&ch];
+            start += prob_start * &width;
+            width *= prob_width;
+        }
+
+        let end = &start + &width;
+        (start, end)
+    }
+
+    /// Port of `_compress`. Returns the exact arithmetic-coded fraction.
+    fn compress(&self, data: &str) -> BigRational {
+        let probs = self.make_probs(data);
+        let (start, end) = self.get_range(data, &probs);
+
+        let mut output_fraction = BigRational::zero();
+        let mut output_denominator = BigInt::one();
+
+        while !(start <= output_fraction && output_fraction < end) {
+            let output_numerator =
+                BigInt::one() + (start.numer() * &output_denominator) / start.denom();
+            output_fraction = BigRational::new(output_numerator, output_denominator.clone());
+            output_denominator *= 2;
+        }
+
+        output_fraction
+    }
+}
+
+impl NCD for ArithNCD {
+    /// Port of `_get_size`.
+    fn compressed_size(&self, data: &str) -> f64 {
+        let fraction = self.compress(data);
+        let numerator = fraction.numer();
+
+        if numerator.is_zero() {
+            return 0.0;
+        }
+
+        // Python's math.log() handles arbitrary-precision ints without
+        // overflow. Converting to f64 here is exact for the string
+        // lengths this port is validated against — see the note on
+        // this trade-off in DECISIONS.md if inputs get very long.
+        let numerator_f = numerator.to_f64().unwrap_or(f64::INFINITY);
+        (numerator_f.ln() / self.base.ln()).ceil()
     }
 }
