@@ -10,6 +10,8 @@ pub struct DistanceRequest {
 #[derive(Serialize)]
 pub struct DistanceResponse {
     pub algorithm: String,
-    pub result: f64,
+    pub distance: Option<f64>,
+    pub similarity: Option<f64>,
+    pub execution_ms: f64,
     pub status: String,
 }
