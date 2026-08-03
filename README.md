@@ -80,6 +80,15 @@ Our primary objective was to **resurrect** an existing open-source Python projec
 🚀 Cargo Based Build System
 
 ---
+## 🛠 Tech Stack
+
+<p align="center">
+
+<img src="https://skillicons.dev/icons?i=rust,python,git,github,vscode"/>
+
+</p>
+
+---
 
 # 🛠️ Project Structure
 
