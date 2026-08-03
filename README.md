@@ -284,8 +284,8 @@ git push origin feature-name
 <img src="https://github.com/USERNAME1.png" width="100px">
 </a>
 
-<a href="https://github.com/USERNAME2">
-<img src="https://github.com/USERNAME2.png" width="100px">
+<a href="https://github.com/Venkatachalam17">
+<img src="https://github.com/Venkatachalam17.png" width="100px">
 </a>
 
 <a href="https://github.com/USERNAME3">
