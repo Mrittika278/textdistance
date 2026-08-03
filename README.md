@@ -287,25 +287,43 @@ git push origin feature-name
 
 # 👨‍💻 Meet the Team
 
-<p align="center">
+<table align="center">
+<tr>
 
+<td align="center">
 <a href="https://github.com/darkweb-alt">
-<img src="https://github.com/darkweb-alt.png" width="100px">
+<img src="https://github.com/darkweb-alt.png" width="120" alt="Pitambar Yadav"><br>
+<b>Pitambar Yadav</b><br>
+<sub>@darkweb-alt</sub>
 </a>
+</td>
 
+<td align="center">
 <a href="https://github.com/Venkatachalam17">
-<img src="https://github.com/Venkatachalam17.png" width="100px">
+<img src="https://github.com/Venkatachalam17.png" width="120" alt="Venkatachalam K"><br>
+<b>Venkatachalam K</b><br>
+<sub>@Venkatachalam17</sub>
 </a>
+</td>
 
+<td align="center">
 <a href="https://github.com/Mrittika278">
-<img src="https://github.com/Mrittika278.png" width="100px">
+<img src="https://github.com/Mrittika278.png" width="120" alt="Mrittika Srinivasan"><br>
+<b>Mrittika Srinivasan</b><br>
+<sub>@Mrittika278</sub>
 </a>
+</td>
 
+<td align="center">
 <a href="https://github.com/praveen-0907">
-<img src="https://github.com/praveen-0907.png" width="100px">
+<img src="https://github.com/praveen-0907.png" width="120" alt="Praveen N"><br>
+<b>Praveen N</b><br>
+<sub>@praveen-0907</sub>
 </a>
+</td>
 
-</p>
+</tr>
+</table>
 
 
 ---
