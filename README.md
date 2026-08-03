@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/bannerrust.png" alt="TextDistance-RS Banner" width="100%">
+  <img src="assests/bannerrust.png" alt="TextDistance-RS Banner" width="100%">
 </p>
 
 <h1 align="center">
