@@ -1,3 +1,4 @@
+use std::time::Instant;
 use axum::{
     extract::Json,
     http::StatusCode,
@@ -17,76 +18,141 @@ pub async fn calculate(
     Json(req): Json<DistanceRequest>,
 ) -> Result<Json<DistanceResponse>, StatusCode> {
 
+    let start = Instant::now();
     let s1 = req.string1.as_str();
     let s2 = req.string2.as_str();
 
-    let result = match req.algorithm.as_str() {
+   let (distance, similarity) = match req.algorithm.as_str() {
 
-        //---------------- SIMPLE ----------------
+    //---------------- SIMPLE ----------------
 
-        "identity" => Identity.similarity_value(s1, s2) as f64,
+    "identity" => (
+        None,
+        Some(Identity.similarity_value(s1, s2) as f64)
+    ),
 
-        "prefix" => Prefix.similarity_value(s1, s2) as f64,
+    "prefix" => (
+        None,
+        Some(Prefix.similarity_value(s1, s2) as f64)
+    ),
 
-        "postfix" => Postfix.similarity_value(s1, s2) as f64,
+    "postfix" => (
+        None,
+        Some(Postfix.similarity_value(s1, s2) as f64)
+    ),
 
-        "hamming" => {
-            if s1.chars().count() != s2.chars().count() {
-                return Err(StatusCode::BAD_REQUEST);
-            }
-            Hamming.distance(s1, s2) as f64
+    "hamming" => {
+
+        if s1.chars().count() != s2.chars().count() {
+            return Err(StatusCode::BAD_REQUEST);
         }
 
-        //---------------- EDIT ----------------
+        (
+            Some(Hamming.distance(s1, s2) as f64),
+            None
+        )
 
-        "levenshtein" => Levenshtein.distance(s1, s2) as f64,
+    },
 
-        "damerau" => DamerauLevenshtein.distance(s1, s2) as f64,
+    //---------------- EDIT ----------------
 
-        "jaro" => Jaro::new().normalized_similarity(s1, s2),
+    "levenshtein" => (
+        Some(Levenshtein.distance(s1, s2) as f64),
+        Some(Levenshtein.normalized_similarity(s1, s2))
+    ),
 
-        "jaro_winkler" => JaroWinkler::new().normalized_similarity(s1, s2),
+    "damerau" => (
+        Some(DamerauLevenshtein.distance(s1, s2) as f64),
+        Some(DamerauLevenshtein.normalized_similarity(s1, s2))
+    ),
 
-        //---------------- TOKEN ----------------
+    "jaro" => (
+        None,
+        Some(Jaro::new().normalized_similarity(s1, s2))
+    ),
 
-        "jaccard" => Jaccard.normalized_similarity(s1, s2),
+    "jaro_winkler" => (
+        None,
+        Some(JaroWinkler::new().normalized_similarity(s1, s2))
+    ),
 
-        "sorensen" => Sorensen.normalized_similarity(s1, s2),
+    //---------------- TOKEN ----------------
 
-        "overlap" => Overlap.normalized_similarity(s1, s2),
+    "jaccard" => (
+        None,
+        Some(Jaccard.normalized_similarity(s1, s2))
+    ),
 
-        "cosine" => Cosine.normalized_similarity(s1, s2),
+    "sorensen" => (
+        None,
+        Some(Sorensen.normalized_similarity(s1, s2))
+    ),
 
-        "tversky" => Tversky::new().normalized_similarity(s1, s2),
+    "overlap" => (
+        None,
+        Some(Overlap.normalized_similarity(s1, s2))
+    ),
 
-        "bag" => Bag.distance(s1, s2) as f64,
+    "cosine" => (
+        None,
+        Some(Cosine.normalized_similarity(s1, s2))
+    ),
 
-        //---------------- SEQUENCE ----------------
+    "tversky" => (
+        None,
+        Some(Tversky::new().normalized_similarity(s1, s2))
+    ),
 
-        "lcsseq" => LcsSeq.similarity_value(s1, s2) as f64,
+    "bag" => (
+        Some(Bag.distance(s1, s2) as f64),
+        None
+    ),
 
-        "lcsstr" => LcsStr.similarity_value(s1, s2) as f64,
+    //---------------- SEQUENCE ----------------
 
-        "ratcliff" => RatcliffObershelp.normalized_similarity(s1, s2),
+    "lcsseq" => (
+        None,
+        Some(LcsSeq.normalized_similarity(s1, s2))
+    ),
 
-        //---------------- PHONETIC ----------------
+    "lcsstr" => (
+        None,
+        Some(LcsStr.normalized_similarity(s1, s2))
+    ),
 
-        "mra" => Mra.similarity_value(s1, s2) as f64,
+    "ratcliff" => (
+        None,
+        Some(RatcliffObershelp.normalized_similarity(s1, s2))
+    ),
 
-        "editex" => Editex::new().distance(s1, s2) as f64,
+    //---------------- PHONETIC ----------------
 
-        //---------------- Unknown ----------------
+    "mra" => (
+        None,
+        Some(Mra.normalized_similarity(s1, s2))
+    ),
 
-        _ => return Err(StatusCode::BAD_REQUEST),
-    };
+    "editex" => (
+        Some(Editex::new().distance(s1, s2) as f64),
+        Some(Editex::new().normalized_similarity(s1, s2))
+    ),
 
-    Ok(Json(DistanceResponse {
+    _ => return Err(StatusCode::BAD_REQUEST),
+};
 
-        algorithm: req.algorithm,
+    let elapsed = start.elapsed().as_secs_f64() * 1000.0;
 
-        result,
+Ok(Json(DistanceResponse {
 
-        status: String::from("Success"),
+    algorithm: req.algorithm,
 
-    }))
+    distance,
+
+    similarity,
+
+    execution_ms: elapsed,
+
+    status: String::from("Success"),
+
+}))
 }
