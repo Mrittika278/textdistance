@@ -280,20 +280,20 @@ git push origin feature-name
 
 <p align="center">
 
-<a href="https://github.com/USERNAME1">
-<img src="https://github.com/USERNAME1.png" width="100px">
+<a href="https://github.com/darkweb-alt">
+<img src="https://github.com/darkweb-alt.png" width="100px">
 </a>
 
 <a href="https://github.com/Venkatachalam17">
 <img src="https://github.com/Venkatachalam17.png" width="100px">
 </a>
 
-<a href="https://github.com/USERNAME3">
-<img src="https://github.com/USERNAME3.png" width="100px">
+<a href="https://github.com/Mrittika278">
+<img src="https://github.com/Mrittika278.png" width="100px">
 </a>
 
-<a href="https://github.com/USERNAME4">
-<img src="https://github.com/USERNAME4.png" width="100px">
+<a href="https://github.com/praveen-0907">
+<img src="https://github.com/praveen-0907.png" width="100px">
 </a>
 
 </p>
