@@ -3,6 +3,7 @@ pub mod edit;
 pub mod token;
 pub mod sequence;
 pub mod phonetic;
+pub mod compression;
 
 pub trait Distance: Sized {
     fn distance(&self, s1: &str, s2: &str) -> usize;
