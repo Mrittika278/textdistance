@@ -276,7 +276,7 @@ git push origin feature-name
 
 ---
 
-# 👨‍💻 Team
+# 👨‍💻 Meet the Team
 
 <p align="center">
 
@@ -298,14 +298,6 @@ git push origin feature-name
 
 </p>
 
-<p align="center">
-
-<b>Member 1</b> &nbsp;&nbsp;&nbsp;
-<b>Member 2</b> &nbsp;&nbsp;&nbsp;
-<b>Member 3</b> &nbsp;&nbsp;&nbsp;
-<b>Member 4</b>
-
-</p>
 
 ---
 
