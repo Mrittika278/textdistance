@@ -7,7 +7,6 @@ use axum::{
 };
 
 use std::net::SocketAddr;
-
 use tower_http::services::ServeDir;
 
 #[tokio::main]
@@ -19,10 +18,11 @@ async fn main() {
         // API endpoint
         .route("/api/calculate", post(api::calculate))
 
-        // Serve static files
+        // Serve frontend
         .fallback_service(ServeDir::new("static"));
 
-    // Render sets the PORT environment variable
+    // Render automatically sets PORT.
+    // Local development defaults to 3000.
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| "3000".to_string())
         .parse::<u16>()
@@ -32,14 +32,12 @@ async fn main() {
 
     println!("🚀 TextDistance-RS running on http://{}", addr);
 
-    use std::env;
+    // Create TCP listener
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .unwrap();
 
-let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-
-let address = format!("0.0.0.0:{}", port);
-
-let listener = TcpListener::bind(address).await?;
-
+    // Start server
     axum::serve(listener, app)
         .await
         .unwrap();
