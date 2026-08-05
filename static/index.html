@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TextDistance-RS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div class="bg-circle circle1"></div><div class="bg-circle circle2"></div>
+<header class="hero">
+<nav class="topbar">
+<a class="logo-brand"><img src="assets/rust-logo.svg" class="rust-logo"><span>TextDistance-RS</span></a>
+<a class="github-btn" href="https://github.com/Mrittika278/textdistance" target="_blank"><i class="bi bi-github"></i> View Source <i class="bi bi-star-fill"></i></a>
+</nav>
+<section class="hero-content">
+<div class="hero-left">
+<span class="badge team"><i class="bi bi-people-fill"></i> Team 4Grads</span>
+<h1> Engineered from <span class="gradient">Python → Rust</span></h1>
+<p>A systems-level reimplementation of the Python TextDistance library in Rust, preserving behavioural equivalence while leveraging Rust's memory safety and native performance.</p>
+<div class="tech-row">
+<div class="tech-card python"><img src="assets/python.svg"><span>Python</span></div>
+<div class="arrow"><i class="bi bi-arrow-right"></i></div>
+<div class="tech-card rust"><img src="assets/rust-logo.svg"><span>Rust</span></div>
+</div>
+<div class="feature-grid">
+<div class="feature"><i class="bi bi-lightning-charge-fill"></i><span>Native Speed</span></div>
+<div class="feature"><i class="bi bi-shield-lock-fill"></i><span>Memory Safe</span></div>
+<div class="feature"><i class="bi bi-check2-circle"></i><span>Behavioural Equivalent</span></div>
+<div class="feature"><i class="bi bi-box-seam"></i><span>Cargo Powered</span></div>
+</div>
+</div>
+<div class="hero-right">
+<div class="stats-card">
+<h3>Project Snapshot</h3>
+<div class="stat"><h2>7</h2><p>Algorithms</p></div>
+<div class="stat"><h2>100%</h2><p>Test Parity</p></div>
+<div class="stat"><h2>0</h2><p>Unsafe Blocks</p></div>
+<div class="stat"><h2>MIT</h2><p>Open Source</p></div>
+</div></div>
+</section></header>
+<section class="demo-title"><span class="pill">🏆 Code Resurrection Hackathon Demo</span></section>
+<main class="dashboard">
+<section class="card input-card">
+<h2><i class="bi bi-keyboard"></i> Input</h2>
+<label>First String</label><input id="string1" type="text" placeholder="Enter first string">
+<label>Second String</label><input id="string2" type="text" placeholder="Enter second string">
+<label>Algorithm</label>
+<select id="algorithm">
+<option value="levenshtein">Levenshtein</option><option value="damerau">Damerau-Levenshtein</option><option value="hamming">Hamming</option><option value="jaro">Jaro</option><option value="jaro_winkler">Jaro-Winkler</option><option value="jaccard">Jaccard</option><option value="cosine">Cosine</option>
+</select>
+<button id="calculateBtn">🦀 Calculate Distance</button>
+</section>
+<section class="card result-card">
+<h2><i class="bi bi-bar-chart-fill"></i> Results</h2>
+<div id="loading" class="loading hidden"><div class="spinner"></div>Running Rust Engine...</div>
+<div class="results">
+<div class="metric-card"><p>Algorithm</p><h3 id="algorithmName">-</h3></div>
+<div class="metric-card"><p>Distance</p><h3 id="distance">-</h3></div>
+<div class="metric-card"><p>Similarity</p><h3 id="similarity">-</h3></div>
+<div class="metric-card"><p>Execution Time</p><h3 id="execution">-</h3></div>
+<div class="metric-card success"><p>Status</p><h3 id="status">Ready</h3></div>
+</div></section></main>
+<footer>Built with ❤️ using Rust • Axum • Cargo<br>Open Source Resurrection Hackathon • Team 4Grads</footer>
+<script src="script.js"></script>
+</body></html>

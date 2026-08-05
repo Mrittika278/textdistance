@@ -2,7 +2,7 @@ mod api;
 mod models;
 
 use axum::{
-    routing::{get, post},
+    routing::post,
     Router,
 };
 
@@ -20,7 +20,7 @@ async fn main() {
         .route("/api/calculate", post(api::calculate))
 
         // Serve static files
-        .nest_service("/", ServeDir::new("static"));
+        .fallback_service(ServeDir::new("static"));
 
     // Render sets the PORT environment variable
     let port = std::env::var("PORT")
@@ -32,9 +32,13 @@ async fn main() {
 
     println!("🚀 TextDistance-RS running on http://{}", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr)
-        .await
-        .unwrap();
+    use std::env;
+
+let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+
+let address = format!("0.0.0.0:{}", port);
+
+let listener = TcpListener::bind(address).await?;
 
     axum::serve(listener, app)
         .await
