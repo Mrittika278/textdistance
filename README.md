@@ -318,7 +318,7 @@ git push origin feature-name
 <a href="https://github.com/praveen-neshamani">
 <img src="https://github.com/praveen-neshamani.png" width="120" alt="Praveen N"><br>
 <b>Praveen N</b><br>
-<sub>@praveen-0907</sub>
+<sub>praveen-neshamani</sub>
 </a>
 </td>
 
